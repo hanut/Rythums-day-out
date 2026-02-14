@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rythum's Europe Trip Tracker</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
+        .container { width: 100%; max-width: 600px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; }
+        .timeline { position: relative; border-left: 4px solid #e0e0e0; padding: 0; list-style: none; margin-left: 20px; }
+        .step { margin-bottom: 25px; padding-left: 30px; position: relative; }
+        .step::before { content: ''; position: absolute; left: -12px; top: 0; width: 20px; height: 20px; background: white; border: 4px solid #bdc3c7; border-radius: 50%; z-index: 1; transition: all 0.3s; }
+        .step.active::before { border-color: #3498db; background: #3498db; box-shadow: 0 0 10px rgba(52, 152, 219, 0.5); }
+        .step.completed::before { border-color: #2ecc71; background: #2ecc71; }
+        .time { font-size: 0.85rem; color: #7f8c8d; font-weight: bold; }
+        .location { font-size: 1.1rem; color: #34495e; margin: 5px 0; }
+        .status-pill { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; background: #eee; color: #666; }
+        .active .status-pill { background: #3498db; color: white; }
+        #current-status { text-align: center; margin-bottom: 20px; padding: 15px; background: #e8f4fd; border-radius: 10px; color: #2980b9; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Trip Progress Visualizer</h2>
+    <div id="current-status">Checking your location...</div>
+    <ul class="timeline" id="timeline">
+        </ul>
+</div>
+
+<script>
+    const itinerary = [
+        { date: "2026-02-14T10:00:00", label: "Toronto to Rome", info: "Flight Departure" },
+        { date: "2026-02-15T09:00:00", label: "Rome", info: "Arrived & Check-in Yellow Square" },
+        { date: "2026-02-16T09:05:00", label: "Rome", info: "Colosseum & Forum (Booked)" },
+        { date: "2026-02-17T06:05:00", label: "En Route: Venice", info: "Train from Rome" },
+        { date: "2026-02-17T12:30:00", label: "Venice", info: "St. Mark's & Glass Tour" },
+        { date: "2026-02-18T07:18:00", label: "En Route: Milan", info: "Train from Venice" },
+        { date: "2026-02-18T15:15:00", label: "En Route: Paris", info: "Train from Milan" },
+        { date: "2026-02-19T20:00:00", label: "Paris", info: "Night Cruise (Booked)" },
+        { date: "2026-02-21T18:30:00", label: "Paris", info: "Eiffel Tower (Booked)" },
+        { date: "2026-02-21T22:00:00", label: "Return Flight", info: "Heading Home" }
+    ];
+
+    function updateTracker() {
+        const now = new Date();
+        // Manual override for testing: const now = new Date("2026-02-17T10:00:00");
+        const timelineEl = document.getElementById('timeline');
+        const statusEl = document.getElementById('current-status');
+        timelineEl.innerHTML = '';
+
+        let currentFound = false;
+
+        itinerary.forEach((item, index) => {
+            const itemDate = new Date(item.date);
+            const nextDate = itinerary[index + 1] ? new Date(itinerary[index+1].date) : null;
+            
+            const li = document.createElement('li');
+            li.className = 'step';
+
+            if (now > itemDate && (!nextDate || now < nextDate)) {
+                li.classList.add('active');
+                statusEl.innerText = `Currently: ${item.label} (${item.info})`;
+                currentFound = true;
+            } else if (now >= itemDate) {
+                li.classList.add('completed');
+            }
+
+            li.innerHTML = `
+                <div class="time">${itemDate.toLocaleDateString()} @ ${itemDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                <div class="location">${item.label}</div>
+                <div class="status-pill">${item.info}</div>
+            `;
+            timelineEl.appendChild(li);
+        });
+
+        if (!currentFound) {
+            statusEl.innerText = now < new Date(itinerary[0].date) ? "Trip hasn't started yet!" : "Trip Completed!";
+        }
+    }
+
+    updateTracker();
+    // Refresh every minute
+    setInterval(updateTracker, 60000);
+</script>
+
+</body>
+</html>
