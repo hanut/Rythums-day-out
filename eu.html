@@ -3,86 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rythum's Europe Trip Tracker</title>
+    <title>Rythum's Europe Trip Live Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
-        .container { width: 100%; max-width: 600px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #2c3e50; }
-        .timeline { position: relative; border-left: 4px solid #e0e0e0; padding: 0; list-style: none; margin-left: 20px; }
-        .step { margin-bottom: 25px; padding-left: 30px; position: relative; }
-        .step::before { content: ''; position: absolute; left: -12px; top: 0; width: 20px; height: 20px; background: white; border: 4px solid #bdc3c7; border-radius: 50%; z-index: 1; transition: all 0.3s; }
-        .step.active::before { border-color: #3498db; background: #3498db; box-shadow: 0 0 10px rgba(52, 152, 219, 0.5); }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background: #f4f7f6; }
+        
+        /* Layout */
+        #sidebar { width: 400px; height: 100%; overflow-y: auto; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1000; padding: 20px; box-sizing: border-box; }
+        #map { flex-grow: 1; height: 100%; }
+
+        h2 { color: #2c3e50; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        #current-status { padding: 15px; background: #e8f4fd; border-radius: 8px; color: #2980b9; font-weight: bold; margin-bottom: 20px; font-size: 0.9rem; }
+
+        /* Timeline Styles */
+        .timeline { position: relative; border-left: 3px solid #e0e0e0; list-style: none; padding: 0; margin-left: 10px; }
+        .step { margin-bottom: 25px; padding-left: 25px; position: relative; cursor: pointer; }
+        .step::before { content: ''; position: absolute; left: -10px; top: 5px; width: 16px; height: 16px; background: white; border: 3px solid #bdc3c7; border-radius: 50%; transition: 0.3s; }
+        
         .step.completed::before { border-color: #2ecc71; background: #2ecc71; }
-        .time { font-size: 0.85rem; color: #7f8c8d; font-weight: bold; }
-        .location { font-size: 1.1rem; color: #34495e; margin: 5px 0; }
-        .status-pill { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; background: #eee; color: #666; }
-        .active .status-pill { background: #3498db; color: white; }
-        #current-status { text-align: center; margin-bottom: 20px; padding: 15px; background: #e8f4fd; border-radius: 10px; color: #2980b9; font-weight: bold; }
+        .step.active::before { border-color: #3498db; background: #3498db; box-shadow: 0 0 8px #3498db; }
+        
+        .time { font-size: 0.75rem; color: #7f8c8d; text-transform: uppercase; }
+        .location { font-size: 1rem; font-weight: bold; color: #34495e; margin: 2px 0; }
+        .info { font-size: 0.85rem; color: #95a5a6; }
+
+        /* Custom Map Marker Colors via CSS filter */
+        .marker-past { filter: hue-rotate(90deg); } /* Green-ish */
+        .marker-current { filter: hue-rotate(190deg); brightness: 1.2; } /* Bright Blue */
+        .marker-future { filter: grayscale(1); opacity: 0.6; } /* Gray */
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Trip Progress Visualizer</h2>
-    <div id="current-status">Checking your location...</div>
-    <ul class="timeline" id="timeline">
-        </ul>
+<div id="sidebar">
+    <h2>Trip Tracker</h2>
+    <div id="current-status">Initializing...</div>
+    <ul class="timeline" id="timeline"></ul>
 </div>
 
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
+    // Trip Data with Coordinates
     const itinerary = [
-        { date: "2026-02-14T10:00:00", label: "Toronto to Rome", info: "Flight Departure" },
-        { date: "2026-02-15T09:00:00", label: "Rome", info: "Arrived & Check-in Yellow Square" },
-        { date: "2026-02-16T09:05:00", label: "Rome", info: "Colosseum & Forum (Booked)" },
-        { date: "2026-02-17T06:05:00", label: "En Route: Venice", info: "Train from Rome" },
-        { date: "2026-02-17T12:30:00", label: "Venice", info: "St. Mark's & Glass Tour" },
-        { date: "2026-02-18T07:18:00", label: "En Route: Milan", info: "Train from Venice" },
-        { date: "2026-02-18T15:15:00", label: "En Route: Paris", info: "Train from Milan" },
-        { date: "2026-02-19T20:00:00", label: "Paris", info: "Night Cruise (Booked)" },
-        { date: "2026-02-21T18:30:00", label: "Paris", info: "Eiffel Tower (Booked)" },
-        { date: "2026-02-21T22:00:00", label: "Return Flight", info: "Heading Home" }
+        { date: "2026-02-14T10:00:00", label: "Toronto", info: "Flight Departure", lat: 43.6532, lng: -79.3832 },
+        { date: "2026-02-15T09:00:00", label: "Rome", info: "Arrived: Yellow Square", lat: 41.9028, lng: 12.4964 },
+        { date: "2026-02-16T09:05:00", label: "Colosseum, Rome", info: "Tour (Booked)", lat: 41.8902, lng: 12.4922 },
+        { date: "2026-02-17T09:42:00", label: "Venice", info: "Arrival at Santa Lucia", lat: 45.4408, lng: 12.3155 },
+        { date: "2026-02-18T09:45:00", label: "Milan", info: "Arrival at Centrale", lat: 45.4642, lng: 9.1900 },
+        { date: "2026-02-18T22:36:00", label: "Paris", info: "Arrival at Gare de Lyon", lat: 48.8566, lng: 2.3522 },
+        { date: "2026-02-21T18:30:00", label: "Eiffel Tower", info: "Final Stop (Booked)", lat: 48.8584, lng: 2.2945 }
     ];
 
-    function updateTracker() {
+    // Initialize Map
+    const map = L.map('map').setView([45, 5], 4); 
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    function updateApp() {
         const now = new Date();
-        // Manual override for testing: const now = new Date("2026-02-17T10:00:00");
         const timelineEl = document.getElementById('timeline');
         const statusEl = document.getElementById('current-status');
         timelineEl.innerHTML = '';
-
+        
         let currentFound = false;
 
         itinerary.forEach((item, index) => {
             const itemDate = new Date(item.date);
             const nextDate = itinerary[index + 1] ? new Date(itinerary[index+1].date) : null;
             
-            const li = document.createElement('li');
-            li.className = 'step';
+            let statusClass = 'future';
+            let markerClass = 'marker-future';
 
             if (now > itemDate && (!nextDate || now < nextDate)) {
-                li.classList.add('active');
-                statusEl.innerText = `Currently: ${item.label} (${item.info})`;
+                statusClass = 'active';
+                markerClass = 'marker-current';
+                statusEl.innerText = `Current Location: ${item.label}`;
+                map.panTo([item.lat, item.lng]);
                 currentFound = true;
             } else if (now >= itemDate) {
-                li.classList.add('completed');
+                statusClass = 'completed';
+                markerClass = 'marker-past';
             }
 
+            // Add Marker to Map
+            const marker = L.marker([item.lat, item.lng]).addTo(map);
+            marker._icon.classList.add(markerClass);
+            marker.bindPopup(`<b>${item.label}</b><br>${item.info}`);
+
+            // Add to Sidebar
+            const li = document.createElement('li');
+            li.className = `step ${statusClass}`;
             li.innerHTML = `
-                <div class="time">${itemDate.toLocaleDateString()} @ ${itemDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                <div class="time">${itemDate.toLocaleDateString()}</div>
                 <div class="location">${item.label}</div>
-                <div class="status-pill">${item.info}</div>
+                <div class="info">${item.info}</div>
             `;
+            li.onclick = () => map.flyTo([item.lat, item.lng], 12);
             timelineEl.appendChild(li);
         });
 
         if (!currentFound) {
-            statusEl.innerText = now < new Date(itinerary[0].date) ? "Trip hasn't started yet!" : "Trip Completed!";
+            statusEl.innerText = now < new Date(itinerary[0].date) ? "Counting down to takeoff!" : "Trip Completed!";
         }
     }
 
-    updateTracker();
-    // Refresh every minute
-    setInterval(updateTracker, 60000);
+    updateApp();
+    setInterval(updateApp, 60000); // Auto-update every minute
 </script>
 
 </body>
