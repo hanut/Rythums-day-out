@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { background: #121212; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; color: white; }
+        canvas { border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background: #1e1e1e; }
+        .controls { margin-top: 20px; text-align: center; max-width: 400px; }
+        h2 { color: #00d4ff; margin-bottom: 5px; }
+        p { opacity: 0.8; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <h2>ADHD Hack: Micro-Stepping</h2>
+    <canvas id="adhdCanvas" width="400" height="300"></canvas>
+    
+    <div class="controls">
+        <p>Don't look at the whole mountain. Just focus on the next tiny block. Each one gives you a hit of dopamine!</p>
+    </div>
+
+<script>
+const canvas = document.getElementById('adhdCanvas');
+const ctx = canvas.getContext('2d');
+
+let blocks = [];
+const goalText = "BIG OVERWHELMING TASK";
+const microSteps = ["Start", "1 Min", "Keep going", "Tiny win", "Almost", "Done!"];
+let currentStep = 0;
+let frame = 0;
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw Background Grid
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    for(let i=0; i<canvas.width; i+=40) {
+        ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke();
+    }
+    for(let i=0; i<canvas.height; i+=40) {
+        ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke();
+    }
+
+    // Drawing the "Mountain" of the big task
+    ctx.fillStyle = "#333";
+    ctx.font = "bold 20px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(goalText, canvas.width/2, 50);
+
+    // Progress Bar
+    ctx.fillStyle = "#444";
+    ctx.fillRect(50, 250, 300, 20);
+    
+    const progress = (currentStep / microSteps.length) * 300;
+    ctx.fillStyle = "#00d4ff";
+    ctx.fillRect(50, 250, progress, 20);
+
+    // Draw the Micro-blocks
+    blocks.forEach((b, index) => {
+        ctx.fillStyle = b.color;
+        ctx.globalAlpha = b.alpha;
+        ctx.fillRect(b.x, b.y, b.size, b.size);
+        
+        // Block text
+        ctx.fillStyle = "white";
+        ctx.globalAlpha = 1;
+        ctx.font = "12px sans-serif";
+        ctx.fillText(b.label, b.x + b.size/2, b.y + b.size/1.5);
+        
+        // "Bounce" animation for the latest block
+        if(index === blocks.length - 1) {
+            b.y += Math.sin(frame * 0.1) * 0.5;
+        }
+    });
+
+    frame++;
+    requestAnimationFrame(draw);
+}
+
+function addStep() {
+    if (currentStep < microSteps.length) {
+        const x = 50 + (currentStep * 50);
+        blocks.push({
+            x: x,
+            y: 150,
+            size: 45,
+            color: `hsl(${currentStep * 50}, 70%, 50%)`,
+            label: microSteps[currentStep],
+            alpha: 1
+        });
+        currentStep++;
+    } else {
+        // Reset after completion
+        setTimeout(() => {
+            blocks = [];
+            currentStep = 0;
+        }, 1000);
+    }
+}
+
+// Click anywhere to add a step (Engagement!)
+canvas.addEventListener('mousedown', addStep);
+
+// Auto-run for visual consumption
+setInterval(addStep, 1500);
+
+draw();
+</script>
+</body>
+</html>
