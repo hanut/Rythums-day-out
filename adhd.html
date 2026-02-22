@@ -1,110 +1,174 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADHD Survival Dashboard</title>
     <style>
-        body { background: #121212; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; color: white; }
-        canvas { border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background: #1e1e1e; }
-        .controls { margin-top: 20px; text-align: center; max-width: 400px; }
-        h2 { color: #00d4ff; margin-bottom: 5px; }
-        p { opacity: 0.8; font-size: 14px; }
+        :root {
+            --bg: #121212;
+            --card: #1e1e1e;
+            --text: #e0e0e0;
+            --accent: #bb86fc;
+            --secondary: #03dac6;
+            --low-energy: #cf6679;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        h1 { color: var(--accent); text-align: center; margin-bottom: 10px; }
+        p.subtitle { text-align: center; font-style: italic; opacity: 0.8; margin-bottom: 30px; }
+
+        .section {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--accent);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .section h2 { margin-top: 0; font-size: 1.2rem; color: var(--secondary); }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .checklist-item:hover { transform: translateX(5px); }
+
+        input[type="checkbox"] {
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--secondary);
+            border-radius: 4px;
+            margin-right: 12px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        input[type="checkbox"]:checked {
+            background-color: var(--secondary);
+        }
+
+        input[type="checkbox"]:checked::after {
+            content: '✓';
+            color: var(--bg);
+            position: absolute;
+            left: 4px;
+            top: -2px;
+            font-weight: bold;
+        }
+
+        input[type="checkbox"]:checked + span {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+
+        .tip-box {
+            background: rgba(187, 134, 252, 0.1);
+            border: 1px dashed var(--accent);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-secondary { background: var(--secondary); }
+
+        .shame-free-zone {
+            text-align: center;
+            border-top: 1px solid #333;
+            margin-top: 40px;
+            padding-top: 20px;
+            color: var(--low-energy);
+        }
     </style>
 </head>
 <body>
 
-    <h2>ADHD Hack: Micro-Stepping</h2>
-    <canvas id="adhdCanvas" width="400" height="300"></canvas>
-    
-    <div class="controls">
-        <p>Don't look at the whole mountain. Just focus on the next tiny block. Each one gives you a hit of dopamine!</p>
+    <h1>ADHD Survival Kit</h1>
+    <p class="subtitle">Focus on <b>one</b> thing at a time. Ignore the rest.</p>
+
+    <div class="section">
+        <h2>🛠️ Externalize Your Brain</h2>
+        <label class="checklist-item">
+            <input type="checkbox"> <span><b>Visual Timers:</b> Make time visible.</span>
+        </label>
+        <label class="checklist-item">
+            <input type="checkbox"> <span><b>Point of Performance:</b> Items live where they are used.</span>
+        </label>
+        <label class="checklist-item">
+            <input type="checkbox"> <span><b>Body Doubling:</b> Work while someone else is there.</span>
+        </label>
+        <div class="tip-box">💡 Try "Focusmate" for instant body-doubling.</div>
     </div>
 
-<script>
-const canvas = document.getElementById('adhdCanvas');
-const ctx = canvas.getContext('2d');
+    <div class="section">
+        <h2>⚡ Motivation Hacks</h2>
+        <label class="checklist-item">
+            <input type="checkbox"> <span><b>Micro-Stepping:</b> Set a goal so small it's "laughable."</span>
+        </label>
+        <label class="checklist-item">
+            <input type="checkbox"> <span><b>5-Minute Rule:</b> Give yourself permission to quit after 5 mins.</span>
+        </label>
+        <label class="checklist-item">
+            <input type="checkbox"> <span><b>Dopamine Pairing:</b> Combine chores with fun podcasts.</span>
+        </label>
+    </div>
 
-let blocks = [];
-const goalText = "BIG OVERWHELMING TASK";
-const microSteps = ["Start", "1 Min", "Keep going", "Tiny win", "Almost", "Done!"];
-let currentStep = 0;
-let frame = 0;
+    <div class="section">
+        <h2>🩺 Professional Foundations</h2>
+        <label class="checklist-item">
+            <input type="checkbox"> <span><b>Medication Check:</b> The "glasses" for your brain.</span>
+        </label>
+        <label class="checklist-item">
+            <input type="checkbox"> <span><b>High-Protein:</b> Build those neurotransmitters.</span>
+        </label>
+        <label class="checklist-item">
+            <input type="checkbox"> <span><b>Intense Exercise:</b> A natural micro-dose of dopamine.</span>
+        </label>
+    </div>
 
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw Background Grid
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 1;
-    for(let i=0; i<canvas.width; i+=40) {
-        ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke();
-    }
-    for(let i=0; i<canvas.height; i+=40) {
-        ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke();
-    }
+    <div class="btn-group">
+        <button class="btn" onclick="alert('Ready! Tell me: What is the ONE task we are breaking down?')">Break Down Task</button>
+        <button class="btn btn-secondary" onclick="alert('I am watching! Go do your thing for 20 minutes.')">Body Double Me</button>
+    </div>
 
-    // Drawing the "Mountain" of the big task
-    ctx.fillStyle = "#333";
-    ctx.font = "bold 20px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(goalText, canvas.width/2, 50);
+    <div class="shame-free-zone">
+        <p><b>Reminder:</b> You aren't lazy. Your brain just needs more "fuel" to start the engine. Drop the shame.</p>
+    </div>
 
-    // Progress Bar
-    ctx.fillStyle = "#444";
-    ctx.fillRect(50, 250, 300, 20);
-    
-    const progress = (currentStep / microSteps.length) * 300;
-    ctx.fillStyle = "#00d4ff";
-    ctx.fillRect(50, 250, progress, 20);
-
-    // Draw the Micro-blocks
-    blocks.forEach((b, index) => {
-        ctx.fillStyle = b.color;
-        ctx.globalAlpha = b.alpha;
-        ctx.fillRect(b.x, b.y, b.size, b.size);
-        
-        // Block text
-        ctx.fillStyle = "white";
-        ctx.globalAlpha = 1;
-        ctx.font = "12px sans-serif";
-        ctx.fillText(b.label, b.x + b.size/2, b.y + b.size/1.5);
-        
-        // "Bounce" animation for the latest block
-        if(index === blocks.length - 1) {
-            b.y += Math.sin(frame * 0.1) * 0.5;
-        }
-    });
-
-    frame++;
-    requestAnimationFrame(draw);
-}
-
-function addStep() {
-    if (currentStep < microSteps.length) {
-        const x = 50 + (currentStep * 50);
-        blocks.push({
-            x: x,
-            y: 150,
-            size: 45,
-            color: `hsl(${currentStep * 50}, 70%, 50%)`,
-            label: microSteps[currentStep],
-            alpha: 1
-        });
-        currentStep++;
-    } else {
-        // Reset after completion
-        setTimeout(() => {
-            blocks = [];
-            currentStep = 0;
-        }, 1000);
-    }
-}
-
-// Click anywhere to add a step (Engagement!)
-canvas.addEventListener('mousedown', addStep);
-
-// Auto-run for visual consumption
-setInterval(addStep, 1500);
-
-draw();
-</script>
 </body>
 </html>
